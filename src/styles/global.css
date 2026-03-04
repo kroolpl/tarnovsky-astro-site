@@ -1,16 +1,25 @@
-@import "tailwindcss";
+/* Import Google Fonts first */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* Define custom theme variables */
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
-  --color-ink: #0f172a; /* Darker slate/navy */
-  --color-paper: #f8fafc; /* Very light slate */
-  --color-line: #e2e8f0; /* Slate 200 */
-  --color-accent: #64748b; /* Slate 500 for accents */
-  --color-accent-light: #94a3b8; /* Slate 400 */
+
+  --color-ink: #0f172a;
+  /* Darker slate/navy */
+  --color-paper: #f8fafc;
+  /* Very light slate */
+  --color-line: #e2e8f0;
+  /* Slate 200 */
+  --color-accent: #64748b;
+  /* Slate 500 for accents */
+  --color-accent-light: #94a3b8;
+  /* Slate 400 */
 }
+
+/* Apply Tailwind directives after theme definition */
+@import "tailwindcss";
 
 @layer base {
   body {
