@@ -47,47 +47,67 @@ if (Astro.request.method === "POST") {
 }
 ---
 
-<Layout title="Create Listing">
-    <div class="min-h-screen bg-slate-950 text-slate-200 py-8">
+<Layout title="Dodaj Ogłoszenie | TARNÓW.TECH">
+    <div class="min-h-screen bg-paper text-ink pt-28 pb-16">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-6 flex items-center justify-between">
+            <div class="mb-8 flex items-center justify-between">
                 <a
                     href="/dashboard"
-                    class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+                    class="flex items-center gap-2 text-accent hover:text-ink transition-colors mono-label text-[10px] uppercase font-bold tracking-wider"
                 >
-                    <ArrowLeft size={18} /> Back to Dashboard
+                    <ArrowLeft size={16} /> Wróć do panelu
                 </a>
             </div>
 
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden"
-            >
+            <div class="bg-white border border-line shadow-xl relative">
+                {/* Decorative Elements */}
+                <div class="absolute top-0 left-0 w-2 h-full bg-ink"></div>
                 <div
-                    class="p-6 md:p-8 border-b border-slate-800 bg-slate-800/20"
+                    class="absolute top-0 right-0 w-16 h-16 border-t border-r border-line opacity-50 pointer-events-none"
                 >
-                    <h1 class="text-2xl font-bold text-white">
-                        Create New Listing
-                    </h1>
-                    <p class="text-slate-400 mt-1">
-                        Fill out the details below to publish your market
-                        listing.
-                    </p>
                 </div>
 
-                <form method="POST" class="p-6 md:p-8 space-y-6">
+                <div class="p-8 md:p-10 border-b border-line">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span
+                                class="mono-label text-[10px] text-accent mb-2 block"
+                                >Kreator Ogłoszenia</span
+                            >
+                            <h1
+                                class="text-3xl font-bold text-ink tracking-tighter uppercase"
+                            >
+                                Nowe Ogłoszenie
+                            </h1>
+                            <p class="text-accent mt-2 text-sm font-medium">
+                                Wypełnij poniższy formularz, aby opublikować
+                                swoje zgłoszenie w systemie.
+                            </p>
+                        </div>
+                        <div
+                            class="hidden sm:flex items-center justify-center w-12 h-12 bg-paper border border-line text-ink rounded-none"
+                        >
+                            <span class="font-mono text-xs font-bold">+</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" class="p-8 md:p-10 space-y-8">
                     {
                         error && (
-                            <div class="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl text-sm">
-                                {error}
+                            <div class="bg-red-50 border-l-2 border-red-500 text-ink p-4 text-[11px] font-medium animate-in fade-in slide-in-from-top-2">
+                                BŁĄD SYSTEMU: {error}
                             </div>
                         )
                     }
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+                    >
                         <div class="md:col-span-2">
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Listing Title <span class="text-red-400"
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Tytuł Ogłoszenia <span class="text-red-500"
                                     >*</span
                                 >
                             </label>
@@ -95,92 +115,116 @@ if (Astro.request.method === "POST") {
                                 type="text"
                                 name="title"
                                 required
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="e.g. iPhone 13 Pro Max"
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                                placeholder="np. iPhone 13 Pro Max - Idealny stan"
                             />
                         </div>
 
                         <div class="md:col-span-2">
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Description</label
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Opis Szczegółowy</label
                             >
                             <textarea
                                 name="description"
-                                rows={4}
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all resize-none"
-                                placeholder="Describe the item, condition, features..."
+                                rows={5}
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium resize-none"
+                                placeholder="Opisz przedmiot, jego stan, historię..."
                             ></textarea>
                         </div>
 
                         <div>
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Price</label
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Cena</label
                             >
                             <input
                                 type="text"
                                 name="price"
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="e.g. 2 850 PLN"
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                                placeholder="np. 2 850 PLN"
                             />
                         </div>
 
                         <div>
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Location</label
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Lokalizacja</label
                             >
                             <input
                                 type="text"
                                 name="location"
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="e.g. Tarnów, Centrum"
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                                placeholder="np. Tarnów, Centrum"
                             />
                         </div>
 
                         <div class="md:col-span-2">
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Category</label
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Kategoria</label
                             >
-                            <select
-                                name="category_id"
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all cursor-pointer"
-                            >
-                                <option value="">Select a category...</option>
-                                {
-                                    categories?.map((cat) => (
-                                        <option value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))
-                                }
-                            </select>
+                            <div class="relative">
+                                <select
+                                    name="category_id"
+                                    class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer"
+                                >
+                                    <option value=""
+                                        >Wybierz kategorię...</option
+                                    >
+                                    {
+                                        categories?.map((cat) => (
+                                            <option value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                <div
+                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-accent"
+                                >
+                                    <svg
+                                        class="fill-current h-4 w-4"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        ><path
+                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="md:col-span-2">
                             <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Image URL</label
+                                class="mono-label text-[10px] block text-accent mb-2"
+                                >Adres URL Zdjęcia</label
                             >
                             <input
                                 type="url"
                                 name="image_url"
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="https://example.com/image.jpg"
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                                placeholder="https://example.com/moje-zdjecie.jpg"
                             />
+                            <p class="text-[10px] mono-label text-accent mt-2">
+                                Wklej link do bezpiecznego hostingu obrazów.
+                            </p>
                         </div>
                     </div>
 
                     <div
-                        class="pt-6 border-t border-slate-800 flex justify-end"
+                        class="pt-8 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4"
                     >
+                        <span
+                            class="text-[10px] mono-label text-accent uppercase"
+                        >
+                            Ogłoszenie zostanie opublikowane natychmiastowo.
+                        </span>
                         <button
                             type="submit"
-                            class="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-medium px-6 py-3 rounded-xl transition-all shadow-lg shadow-blue-500/20"
+                            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-ink text-white py-4 px-8 text-xs font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300 shadow-lg shadow-ink/10"
                         >
-                            <Save size={18} /> Publish Listing
+                            <Save size={16} /> Publikuj Ogłoszenie
                         </button>
                     </div>
                 </form>
