@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-ink: #0f172a; /* Darker slate/navy */
+  --color-paper: #f8fafc; /* Very light slate */
+  --color-line: #e2e8f0; /* Slate 200 */
+  --color-accent: #64748b; /* Slate 500 for accents */
+  --color-accent-light: #94a3b8; /* Slate 400 */
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+}
+
+.data-row {
+  @apply transition-all duration-300 cursor-pointer border-l-2 border-transparent;
+}
+
+.data-row:hover {
+  @apply bg-white text-ink border-accent shadow-sm translate-x-1;
+}
+
+.mono-label {
+  @apply font-mono text-[10px] uppercase tracking-widest opacity-50;
+}
+
+.btn-tech {
+  @apply relative overflow-hidden transition-all duration-300;
+}
+
+.btn-tech::after {
+  content: '';
+  @apply absolute inset-0 bg-accent opacity-0 transition-opacity duration-300;
+}
+
+.btn-tech:hover::after {
+  @apply opacity-10;
+}
