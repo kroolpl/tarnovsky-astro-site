@@ -1,10 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import type { AstroCookies } from 'astro';
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials missing. Check your .env file.');
-}
-
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+export const createSupabase = (cookies: AstroCookies) => {
+    return createServerClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+        {
+            cookies: {
+                get(key) {
+                    return cookies.get(key)?.value;
+                },
+                set(key, value, options) {
+                    cookies.set(key, value, options);
+                },
+                remove(key, options) {
+                    cookies.delete(key, options);
+                },
+            },
+        }
+    );
+};
