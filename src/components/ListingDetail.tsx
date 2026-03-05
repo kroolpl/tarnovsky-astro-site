@@ -90,17 +90,8 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                             <h2 className="mono-label mb-4 sm:mb-6 border-l-2 border-accent pl-4 text-[9px] sm:text-[10px]">Opis przedmiotu</h2>
                             <div className="text-ink/80 leading-relaxed space-y-4 font-light text-base sm:text-lg">
                                 <p>
-                                    {listing.description || `Przedmiotem sprzedaży jest ${listing.title}. Stan techniczny oraz wizualny oceniam na bardzo dobry. Sprzęt był używany sporadycznie, głównie w warunkach domowych.`}
+                                    {listing.description || `Przedmiotem sprzedaży jest ${listing.title}. Stan techniczny oraz wizualny oceniam na bardzo dobry.`}
                                 </p>
-                                <p>
-                                    W zestawie znajduje się wszystko, co oferuje producent w oryginalnym opakowaniu. Możliwość sprawdzenia na miejscu w Tarnowie lub wysyłka ubezpieczona kurierem.
-                                </p>
-                                <ul className="list-disc list-inside space-y-2 mt-4 sm:mt-6 text-sm sm:text-base opacity-70">
-                                    <li>Oryginalne opakowanie</li>
-                                    <li>Pełna dokumentacja</li>
-                                    <li>Gwarancja do końca roku</li>
-                                    <li>Stan idealny, brak rys</li>
-                                </ul>
                             </div>
                         </section>
 
