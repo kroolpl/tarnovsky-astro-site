@@ -1,9 +1,9 @@
-import { d as defineMiddleware, s as sequence } from './chunks/index_CBmMOajw.mjs';
+import { d as defineMiddleware, s as sequence } from './chunks/index_BEsE-Kee.mjs';
 import { createServerClient } from '@supabase/ssr';
 import 'es-module-lexer';
-import './chunks/astro-designed-error-pages_C5swUOX9.mjs';
+import './chunks/astro-designed-error-pages_BB3nmC9O.mjs';
 import 'piccolore';
-import './chunks/astro/server_BWUWzUga.mjs';
+import './chunks/astro/server_BPtd2oIL.mjs';
 import 'clsx';
 
 const createSupabase = (cookies) => {

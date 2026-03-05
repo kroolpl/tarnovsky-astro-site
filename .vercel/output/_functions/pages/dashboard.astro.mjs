@@ -1,6 +1,6 @@
-import { e as createComponent, k as renderComponent, r as renderTemplate, h as createAstro, m as maybeRenderHead, g as addAttribute } from '../chunks/astro/server_BWUWzUga.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, h as createAstro, m as maybeRenderHead, g as addAttribute } from '../chunks/astro/server_BPtd2oIL.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_DCFL-TYu.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C64yfHWI.mjs';
 import { LogOut, User, Settings, Plus } from 'lucide-react';
 import { U as UserAvatar } from '../chunks/UserAvatar_PuqkXw6f.mjs';
 export { renderers } from '../renderers.mjs';

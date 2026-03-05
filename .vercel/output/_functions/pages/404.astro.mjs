@@ -1,8 +1,8 @@
-import { e as createComponent, k as renderComponent, r as renderTemplate, h as createAstro, m as maybeRenderHead } from '../chunks/astro/server_BWUWzUga.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, h as createAstro, m as maybeRenderHead } from '../chunks/astro/server_BPtd2oIL.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_DCFL-TYu.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C64yfHWI.mjs';
 import { H as Header } from '../chunks/Header_DnIaIViz.mjs';
-import { $ as $$Footer } from '../chunks/Footer_CQqcpzKm.mjs';
+import { $ as $$Footer } from '../chunks/Footer_Cz843VqF.mjs';
 import { ArrowLeft, Search } from 'lucide-react';
 /* empty css                               */
 export { renderers } from '../renderers.mjs';
