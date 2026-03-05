@@ -19,7 +19,7 @@ export const PromotedSidebar = ({ items }: { items: Announcement[] }) => (
                         >
                             <div className="aspect-[4/3] bg-paper mb-5 overflow-hidden relative">
                                 <img
-                                    src={item.image}
+                                    src={item.image_urls?.[0] || 'https://picsum.photos/seed/promo/400/300'}
                                     alt={item.title}
                                     className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                                     referrerPolicy="no-referrer"

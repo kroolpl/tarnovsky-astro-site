@@ -29,7 +29,7 @@ const transformToListing = (item: any): Announcement => ({
 	date: new Date(item.created_at).toISOString().split("T")[0],
 	title: item.title,
 	price: item.price,
-	image: item.image_url || "https://picsum.photos/seed/placeholder/800/800",
+	image_urls: item.image_urls || [],
 	description: item.description,
 	location: item.location,
 	category: item.categories?.name || "Inne",

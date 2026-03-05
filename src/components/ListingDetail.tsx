@@ -9,6 +9,10 @@ interface ListingDetailProps {
 }
 
 export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack }) => {
+    const [activeIndex, setActiveIndex] = React.useState(0);
+    const images = listing.image_urls && listing.image_urls.length > 0
+        ? listing.image_urls
+        : ['https://picsum.photos/seed/detail/1200/800'];
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -41,10 +45,14 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="aspect-square sm:aspect-video bg-paper border border-line overflow-hidden mb-6 sm:mb-8 relative group"
+                        className="aspect-square sm:aspect-video bg-paper border border-line overflow-hidden mb-4 relative group"
                     >
-                        <img
-                            src={listing.image || 'https://picsum.photos/seed/detail/1200/800'}
+                        <motion.img
+                            key={activeIndex}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            src={images[activeIndex]}
                             alt={listing.title}
                             className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                             referrerPolicy="no-referrer"
@@ -53,6 +61,28 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                             <span className="bg-ink text-white px-2 sm:px-3 py-1 mono-label text-[8px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em]">ORIGINAL_ASSET</span>
                         </div>
                     </motion.div>
+
+                    {images.length > 1 && (
+                        <div className="grid grid-cols-3 gap-4 mb-8">
+                            {images.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setActiveIndex(idx)}
+                                    className={`aspect-video border transition-all overflow-hidden bg-paper ${activeIndex === idx
+                                            ? 'border-accent opacity-100 scale-[1.02]'
+                                            : 'border-line opacity-50 hover:opacity-100 grayscale'
+                                        }`}
+                                >
+                                    <img
+                                        src={img}
+                                        alt={`${listing.title} thumbnail ${idx + 1}`}
+                                        className="w-full h-full object-cover"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="space-y-10 sm:space-y-12">
                         <section>

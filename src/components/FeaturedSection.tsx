@@ -8,7 +8,7 @@ export interface Announcement {
     price: string;
     tags?: string[];
     featured?: boolean;
-    image?: string;
+    image_urls?: string[];
     description?: string;
     location?: string;
     category?: string;
@@ -31,7 +31,7 @@ export const FeaturedSection = ({ items }: { items: Announcement[] }) => (
                     >
                         <div className="aspect-square relative bg-paper overflow-hidden">
                             <motion.img
-                                src={item.image}
+                                src={item.image_urls?.[0] || 'https://picsum.photos/seed/detail/1200/800'}
                                 alt={item.title}
                                 className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
                                 whileHover={{ scale: 1.05 }}

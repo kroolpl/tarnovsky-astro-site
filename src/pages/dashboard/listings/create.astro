@@ -22,24 +22,54 @@ if (Astro.request.method === "POST") {
     const price = formData.get("price")?.toString();
     const location = formData.get("location")?.toString();
     const category_id = formData.get("category_id")?.toString();
-    const image_url = formData.get("image_url")?.toString() || null;
+    const imageFiles = formData.getAll("images") as File[];
+    let image_urls: string[] = [];
 
     if (title) {
-        const { error: insertError } = await supabase.from("listings").insert({
-            title,
-            description,
-            price,
-            location,
-            category_id: category_id || null,
-            image_url,
-            seller_id: user.id,
-        });
+        // Handle up to 3 images
+        const validImages = imageFiles
+            .filter((file) => file.size > 0)
+            .slice(0, 3);
 
-        if (insertError) {
-            error = insertError.message;
-        } else {
-            success = true;
-            return Astro.redirect("/dashboard");
+        for (const imageFile of validImages) {
+            const fileExt = imageFile.name.split(".").pop() || "jpg";
+            const fileName = `${crypto.randomUUID()}.${fileExt}`;
+            const filePath = `${user.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("listings")
+                .upload(filePath, imageFile);
+
+            if (uploadError) {
+                error = `Błąd przesyłania zdjęcia: ${uploadError.message}`;
+                break;
+            } else {
+                const { data } = supabase.storage
+                    .from("listings")
+                    .getPublicUrl(filePath);
+                image_urls.push(data.publicUrl);
+            }
+        }
+
+        if (!error) {
+            const { error: insertError } = await supabase
+                .from("listings")
+                .insert({
+                    title,
+                    description,
+                    price,
+                    location,
+                    category_id: category_id || null,
+                    image_urls,
+                    seller_id: user.id,
+                });
+
+            if (insertError) {
+                error = insertError.message;
+            } else {
+                success = true;
+                return Astro.redirect("/dashboard");
+            }
         }
     } else {
         error = "Title is required.";
@@ -92,7 +122,11 @@ if (Astro.request.method === "POST") {
                     </div>
                 </div>
 
-                <form method="POST" class="p-8 md:p-10 space-y-8">
+                <form
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="p-8 md:p-10 space-y-8"
+                >
                     {
                         error && (
                             <div class="bg-red-50 border-l-2 border-red-500 text-ink p-4 text-[11px] font-medium animate-in fade-in slide-in-from-top-2">
@@ -198,16 +232,17 @@ if (Astro.request.method === "POST") {
                         <div class="md:col-span-2">
                             <label
                                 class="mono-label text-[10px] block text-accent mb-2"
-                                >Adres URL Zdjęcia</label
+                                >Zdjęcia (Galeia)</label
                             >
                             <input
-                                type="url"
-                                name="image_url"
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
-                                placeholder="https://example.com/moje-zdjecie.jpg"
+                                type="file"
+                                name="images"
+                                accept="image/*"
+                                multiple
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-ink file:text-white hover:file:bg-accent file:transition-all file:cursor-pointer"
                             />
                             <p class="text-[10px] mono-label text-accent mt-2">
-                                Wklej link do bezpiecznego hostingu obrazów.
+                                Możesz przesłać do 3 zdjęć (max 5MB każda).
                             </p>
                         </div>
                     </div>
