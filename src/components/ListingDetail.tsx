@@ -69,8 +69,8 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                                     key={idx}
                                     onClick={() => setActiveIndex(idx)}
                                     className={`aspect-video border transition-all overflow-hidden bg-paper ${activeIndex === idx
-                                            ? 'border-accent opacity-100 scale-[1.02]'
-                                            : 'border-line opacity-50 hover:opacity-100 grayscale'
+                                        ? 'border-accent opacity-100 scale-[1.02]'
+                                        : 'border-line opacity-50 hover:opacity-100 grayscale'
                                         }`}
                                 >
                                     <img
@@ -106,19 +106,47 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                         <section className="border-t border-line pt-10 sm:pt-12">
                             <h2 className="mono-label mb-6 sm:mb-8 text-[9px] sm:text-[10px]">Parametry techniczne</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
-                                {[
-                                    { label: 'Kategoria', value: listing.category || 'Elektronika' },
-                                    { label: 'Stan', value: 'Używany' },
-                                    { label: 'Gwarancja', value: 'Tak' },
-                                    { label: 'Faktura', value: 'Nie' },
-                                    { label: 'Model', value: '2023_REV_A' },
-                                    { label: 'Lokalizacja', value: listing.location || 'Tarnów' },
-                                ].map((param, idx) => (
-                                    <div key={idx} className="border-b border-line pb-3 sm:pb-4">
-                                        <p className="mono-label text-[7px] sm:text-[8px] mb-1">{param.label}</p>
-                                        <p className="text-xs sm:text-sm font-medium">{param.value}</p>
-                                    </div>
-                                ))}
+                                {(() => {
+                                    const params = [
+                                        { label: 'Kategoria', value: listing.category || 'Elektronika' },
+                                        { label: 'Lokalizacja', value: listing.location || 'Tarnów' },
+                                    ];
+
+                                    // Add dynamic category details if they exist
+                                    if (listing.category_details) {
+                                        const labels: Record<string, string> = {
+                                            'sub_category': 'Podkategoria',
+                                            'area': 'Powierzchnia',
+                                            'rooms': 'Pokoje',
+                                            'floor': 'Piętro',
+                                            'salary': 'Wynagrodzenie',
+                                            'contract_type': 'Typ umowy',
+                                            'experience': 'Doświadczenie',
+                                            'condition': 'Stan',
+                                            'brand': 'Marka / Model',
+                                            'year': 'Rok produkcji',
+                                            'mileage': 'Przebieg',
+                                            'fuel': 'Paliwo',
+                                            'task_type': 'Typ zlecenia',
+                                            'deadline': 'Termin',
+                                            'time_estimate': 'Czas trwania'
+                                        };
+
+                                        Object.entries(listing.category_details).forEach(([key, value]) => {
+                                            if (value) {
+                                                const displayValue = key === 'area' ? `${value} m²` : key === 'mileage' ? `${value} km` : value;
+                                                params.push({ label: labels[key] || key, value: displayValue as string });
+                                            }
+                                        });
+                                    }
+
+                                    return params.map((param, idx) => (
+                                        <div key={idx} className="border-b border-line pb-3 sm:pb-4">
+                                            <p className="mono-label text-[7px] sm:text-[8px] mb-1 uppercase opacity-60">{param.label}</p>
+                                            <p className="text-xs sm:text-sm font-medium">{param.value}</p>
+                                        </div>
+                                    ));
+                                })()}
                             </div>
                         </section>
                     </div>

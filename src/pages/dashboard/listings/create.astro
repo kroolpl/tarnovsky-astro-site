@@ -13,7 +13,7 @@ let success = false;
 // Fetch categories for the select input
 const { data: categories } = await supabase
     .from("categories")
-    .select("id, name");
+    .select("id, name, slug");
 
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
@@ -24,6 +24,15 @@ if (Astro.request.method === "POST") {
     const category_id = formData.get("category_id")?.toString();
     const imageFiles = formData.getAll("images") as File[];
     let image_urls: string[] = [];
+
+    // Extract category-specific details
+    const category_details: Record<string, any> = {};
+    for (const [key, value] of formData.entries()) {
+        if (key.startsWith("details_")) {
+            const fieldName = key.replace("details_", "");
+            category_details[fieldName] = value;
+        }
+    }
 
     if (title) {
         // Handle up to 3 images
@@ -62,6 +71,7 @@ if (Astro.request.method === "POST") {
                     category_id: category_id || null,
                     image_urls,
                     seller_id: user.id,
+                    category_details,
                 });
 
             if (insertError) {
@@ -123,6 +133,7 @@ if (Astro.request.method === "POST") {
                 </div>
 
                 <form
+                    id="listing-form"
                     method="POST"
                     enctype="multipart/form-data"
                     class="p-8 md:p-10 space-y-8"
@@ -200,6 +211,7 @@ if (Astro.request.method === "POST") {
                             >
                             <div class="relative">
                                 <select
+                                    id="category-select"
                                     name="category_id"
                                     class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer"
                                 >
@@ -208,7 +220,7 @@ if (Astro.request.method === "POST") {
                                     >
                                     {
                                         categories?.map((cat) => (
-                                            <option value={cat.id}>
+                                            <option value={cat.id} data-slug={cat.slug}>
                                                 {cat.name}
                                             </option>
                                         ))
@@ -229,10 +241,18 @@ if (Astro.request.method === "POST") {
                             </div>
                         </div>
 
+                        {/* Dynamic Category Fields */}
+                        <div id="category-fields-container" class="md:col-span-2 hidden animate-in fade-in slide-in-from-top-4 duration-500">
+                             <div class="h-px bg-line w-full my-4"></div>
+                             <div id="dynamic-fields" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                 {/* Will be populated by JS */}
+                             </div>
+                        </div>
+
                         <div class="md:col-span-2">
                             <label
                                 class="mono-label text-[10px] block text-accent mb-2"
-                                >Zdjęcia (Galeia)</label
+                                >Zdjęcia (Galeria)</label
                             >
                             <input
                                 type="file"
@@ -267,3 +287,89 @@ if (Astro.request.method === "POST") {
         </div>
     </div>
 </Layout>
+
+<script>
+    const categorySelect = document.getElementById('category-select') as HTMLSelectElement;
+    const fieldsContainer = document.getElementById('category-fields-container');
+    const dynamicFields = document.getElementById('dynamic-fields');
+
+    const CATEGORY_FIELDS: Record<string, any[]> = {
+        'nieruchomosci': [
+            { name: 'sub_category', label: 'Typ ogłoszenia', type: 'select', options: ['Wynajem długoterminowy', 'Sprzedaż', 'Stancje/Pokoje'] },
+            { name: 'area', label: 'Powierzchnia (m²)', type: 'text', placeholder: 'np. 45' },
+            { name: 'rooms', label: 'Liczba pokoi', type: 'number', placeholder: 'np. 2' },
+            { name: 'floor', label: 'Piętro', type: 'text', placeholder: 'np. 3/4' },
+        ],
+        'praca': [
+            { name: 'sub_category', label: 'Branża', type: 'select', options: ['Gastronomia', 'Praca fizyczna', 'Praca dodatkowa/uczniowska', 'Handel', 'Usługi'] },
+            { name: 'salary', label: 'Wynagrodzenie', type: 'text', placeholder: 'np. 25-30 zł/h lub 5000 brutto' },
+            { name: 'contract_type', label: 'Typ umowy', type: 'select', options: ['Umowa o pracę', 'Umowa zlecenie/o dzieło', 'B2B', 'Inna'] },
+        ],
+        'uslugi': [
+            { name: 'sub_category', label: 'Typ usługi', type: 'select', options: ['Remonty', 'Naprawa sprzętu', 'Korepetycje', 'Uroda', 'Ogród', 'Transport'] },
+            { name: 'experience', label: 'Doświadczenie', type: 'text', placeholder: 'np. 5 lat' },
+        ],
+        'oddam-zamienie': [
+            { name: 'type', label: 'Rodzaj', type: 'select', options: ['Oddam za darmo', 'Zamienię'] },
+            { name: 'condition', label: 'Stan', type: 'select', options: ['Nowy', 'Używany (idealny)', 'Używany (widoczne ślady)', 'Do odświeżenia/naprawy'] },
+        ],
+        'motoryzacja': [
+            { name: 'brand', label: 'Marka i Model', type: 'text', placeholder: 'np. VW Golf VII' },
+            { name: 'year', label: 'Rok produkcji', type: 'number', placeholder: 'np. 2015' },
+            { name: 'mileage', label: 'Przebieg (km)', type: 'number', placeholder: 'np. 150000' },
+            { name: 'fuel', label: 'Paliwo', type: 'select', options: ['Benzyna', 'Diesel', 'LPG', 'Hybryda', 'Elektryczny'] },
+        ],
+        'drobne-zlecenia': [
+            { name: 'task_type', label: 'Rodzaj zlecenia', type: 'select', options: ['Jednorazowe', 'Cykliczne', 'Szybka pomoc'] },
+            { name: 'deadline', label: 'Termin realizacji', type: 'text', placeholder: 'np. Jak najszybciej / Sobota rano' },
+            { name: 'time_estimate', label: 'Szacowany czas', type: 'text', placeholder: 'np. 2-3 godziny' },
+        ]
+    };
+
+    function renderFields(slug: string) {
+        if (!dynamicFields || !fieldsContainer) return;
+
+        const fields = CATEGORY_FIELDS[slug];
+        if (!fields) {
+            fieldsContainer.classList.add('hidden');
+            dynamicFields.innerHTML = '';
+            return;
+        }
+
+        fieldsContainer.classList.remove('hidden');
+        dynamicFields.innerHTML = fields.map(field => {
+            const inputName = `details_${field.name}`;
+            let inputHtml = '';
+
+            if (field.type === 'select') {
+                inputHtml = `
+                    <div class="relative">
+                        <select name="${inputName}" class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer">
+                            ${field.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('')}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-accent">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"></path></svg>
+                        </div>
+                    </div>
+                `;
+            } else {
+                inputHtml = `
+                    <input type="${field.type}" name="${inputName}" placeholder="${field.placeholder || ''}" class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium" />
+                `;
+            }
+
+            return `
+                <div class="${field.fullWidth ? 'md:col-span-2' : ''}">
+                    <label class="mono-label text-[10px] block text-accent mb-2 uppercase tracking-wider">${field.label}</label>
+                    ${inputHtml}
+                </div>
+            `;
+        }).join('');
+    }
+
+    categorySelect?.addEventListener('change', () => {
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        const slug = selectedOption.getAttribute('data-slug');
+        renderFields(slug || '');
+    });
+</script>

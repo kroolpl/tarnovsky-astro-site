@@ -12,6 +12,7 @@ export interface Announcement {
     description?: string;
     location?: string;
     category?: string;
+    category_details?: Record<string, any>;
     seller?: string;
 }
 
