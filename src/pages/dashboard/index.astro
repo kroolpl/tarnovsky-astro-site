@@ -175,9 +175,12 @@ const { data: listings } = await supabase
                                                         listing.created_at
                                                     ).toLocaleDateString()}
                                                 </span>
-                                                <button class="text-[10px] font-bold text-ink hover:text-accent transition-colors uppercase">
+                                                <a
+                                                    href={`/dashboard/listings/edit/${listing.id}`}
+                                                    class="text-[10px] font-bold text-ink hover:text-accent transition-colors uppercase"
+                                                >
                                                     Edytuj &rarr;
-                                                </button>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
