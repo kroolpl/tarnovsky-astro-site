@@ -1,6 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Building2, Briefcase, Wrench, Gift, Car, ClipboardList, CheckCircle2 } from "lucide-react";
 
 const { supabase, user } = Astro.locals;
 if (!user) {
@@ -13,7 +13,8 @@ let success = false;
 // Fetch categories for the select input
 const { data: categories } = await supabase
     .from("categories")
-    .select("id, name, slug");
+    .select("id, name, slug")
+    .order('name');
 
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
@@ -89,209 +90,244 @@ if (Astro.request.method === "POST") {
 
 <Layout title="Dodaj Ogłoszenie | TARNÓW.TECH">
     <div class="min-h-screen bg-paper text-ink pt-28 pb-16">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-8 flex items-center justify-between">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12 flex items-center justify-between">
                 <a
                     href="/dashboard"
-                    class="flex items-center gap-2 text-accent hover:text-ink transition-colors mono-label text-[10px] uppercase font-bold tracking-wider"
+                    class="flex items-center gap-2 text-accent hover:text-ink transition-colors mono-label text-[10px] uppercase font-bold tracking-wider group"
                 >
-                    <ArrowLeft size={16} /> Wróć do panelu
+                    <ArrowLeft size={16} class="group-hover:-translate-x-1 transition-transform" /> Wróć do panelu
                 </a>
+
+                <div class="flex items-center gap-4">
+                    <div id="step-indicator" class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-ink" id="dot-1"></div>
+                        <div class="w-8 h-[1px] bg-line"></div>
+                        <div class="w-2 h-2 rounded-full bg-line" id="dot-2"></div>
+                    </div>
+                    <span class="mono-label text-[10px] text-accent uppercase tracking-widest" id="step-text">Krok 1 z 2</span>
+                </div>
             </div>
 
-            <div class="bg-white border border-line shadow-xl relative">
-                {/* Decorative Elements */}
-                <div class="absolute top-0 left-0 w-2 h-full bg-ink"></div>
-                <div
-                    class="absolute top-0 right-0 w-16 h-16 border-t border-r border-line opacity-50 pointer-events-none"
-                >
+            {/* Step 1: Category Selection */}
+            <div id="step-1" class="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="text-center mb-12">
+                    <span class="mono-label text-[10px] text-accent mb-3 block uppercase tracking-[0.2em]">Wybierz kategorię</span>
+                    <h1 class="text-4xl font-bold text-ink tracking-tighter uppercase mb-4">Co chcesz ogłosić?</h1>
+                    <p class="text-accent max-w-lg mx-auto text-sm font-medium">
+                        Wybierz odpowiednią kategorię, abyśmy mogli dopasować formularz i wyświetlić Twoje ogłoszenie we właściwym miejscu.
+                    </p>
                 </div>
 
-                <div class="p-8 md:p-10 border-b border-line">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <span
-                                class="mono-label text-[10px] text-accent mb-2 block"
-                                >Kreator Ogłoszenia</span
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categories?.map((cat) => {
+                        let Icon = ClipboardList;
+                        let desc = "Standardowe ogłoszenie lokalne";
+                        
+                        if (cat.slug === 'nieruchomosci') { 
+                            Icon = Building2; 
+                            desc = "Mieszkania, domy, stancje i pokoje bezpośrednio.";
+                        }
+                        if (cat.slug === 'praca') { 
+                            Icon = Briefcase; 
+                            desc = "Oferty pracy w gastronomii, handlu i usługach.";
+                        }
+                        if (cat.slug === 'uslugi') { 
+                            Icon = Wrench; 
+                            desc = "Fachowcy, remonty, korepetycje i uroda.";
+                        }
+                        if (cat.slug === 'oddam-zamienie') { 
+                            Icon = Gift; 
+                            desc = "Oddaj za darmo lub wymień się ze sąsiadami.";
+                        }
+                        if (cat.slug === 'motoryzacja') { 
+                            Icon = Car; 
+                            desc = "Samochody, skutery, części i opony lokalnie.";
+                        }
+                        if (cat.slug === 'drobne-zlecenia') { 
+                            Icon = ClipboardList; 
+                            desc = "Szybka pomoc, koszenie trawy, wywóz mebli.";
+                        }
+
+                        return (
+                            <button
+                                type="button"
+                                class="category-card group bg-white border border-line p-8 text-left hover:border-ink transition-all duration-300 relative overflow-hidden flex flex-col items-start gap-4 shadow-sm hover:shadow-2xl hover:shadow-ink/5"
+                                data-id={cat.id}
+                                data-slug={cat.slug}
+                                data-name={cat.name}
                             >
-                            <h1
-                                class="text-3xl font-bold text-ink tracking-tighter uppercase"
-                            >
-                                Nowe Ogłoszenie
-                            </h1>
-                            <p class="text-accent mt-2 text-sm font-medium">
-                                Wypełnij poniższy formularz, aby opublikować
-                                swoje zgłoszenie w systemie.
-                            </p>
-                        </div>
-                        <div
-                            class="hidden sm:flex items-center justify-center w-12 h-12 bg-paper border border-line text-ink rounded-none"
-                        >
-                            <span class="font-mono text-xs font-bold">+</span>
-                        </div>
+                                <div class="w-12 h-12 bg-paper border border-line flex items-center justify-center text-ink group-hover:bg-ink group-hover:text-white transition-all duration-300 rounded-none relative z-10">
+                                    <Icon size={24} />
+                                </div>
+                                <div class="relative z-10">
+                                    <h3 class="font-bold text-lg uppercase tracking-tight mb-2 group-hover:text-accent transition-colors">{cat.name}</h3>
+                                    <p class="text-xs text-accent font-medium leading-relaxed opacity-80 group-hover:opacity-100">{desc}</p>
+                                </div>
+                                <div class="absolute -bottom-4 -right-4 text-line/20 group-hover:text-accent/10 transition-colors pointer-events-none transform -rotate-12 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 duration-700">
+                                    <Icon size={120} />
+                                </div>
+                            </button>
+                        )
+                    })}
+                </div>
+            </div>
+
+            {/* Step 2: Listing Form */}
+            <div id="step-2" class="hidden">
+                <div class="bg-white border border-line shadow-2xl relative animate-in fade-in zoom-in-95 duration-500">
+                    <div class="absolute top-0 left-0 w-2 h-full bg-ink"></div>
+                    
+                    <div class="p-8 md:p-10 border-b border-line flex items-center justify-between">
+                         <div class="flex items-center gap-6">
+                            <button id="back-to-step-1" class="flex items-center justify-center w-10 h-10 border border-line hover:border-ink hover:bg-paper transition-all">
+                                <ArrowLeft size={18} />
+                            </button>
+                            <div>
+                                <span class="mono-label text-[10px] text-accent mb-1 block flex items-center gap-2">
+                                    KREATYOR OGŁOSZENIA / <span id="selected-category-name" class="text-ink font-bold">MOTORYZACJA</span>
+                                </span>
+                                <h2 class="text-2xl font-bold text-ink tracking-tighter uppercase">Szczegóły Ogłoszenia</h2>
+                            </div>
+                         </div>
+                         <div class="hidden sm:block">
+                            <CheckCircle2 size={32} class="text-line" />
+                         </div>
                     </div>
-                </div>
 
-                <form
-                    id="listing-form"
-                    method="POST"
-                    enctype="multipart/form-data"
-                    class="p-8 md:p-10 space-y-8"
-                >
-                    {
-                        error && (
+                    <form
+                        id="listing-form"
+                        method="POST"
+                        enctype="multipart/form-data"
+                        class="p-8 md:p-10 space-y-8"
+                    >
+                        <input type="hidden" name="category_id" id="hidden-category-id" />
+                        
+                        {error && (
                             <div class="bg-red-50 border-l-2 border-red-500 text-ink p-4 text-[11px] font-medium animate-in fade-in slide-in-from-top-2">
                                 BŁĄD SYSTEMU: {error}
                             </div>
-                        )
-                    }
+                        )}
 
-                    <div
-                        class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
-                    >
-                        <div class="md:col-span-2">
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Tytuł Ogłoszenia <span class="text-red-500"
-                                    >*</span
-                                >
-                            </label>
-                            <input
-                                type="text"
-                                name="title"
-                                required
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
-                                placeholder="np. iPhone 13 Pro Max - Idealny stan"
-                            />
-                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                            <div class="md:col-span-2">
+                                <label class="mono-label text-[10px] block text-accent mb-2 uppercase tracking-wider font-bold">Podstawy</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="md:col-span-2">
+                                        <input
+                                            type="text"
+                                            name="title"
+                                            required
+                                            class="w-full bg-paper border border-line px-6 py-4 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium placeholder:opacity-30"
+                                            placeholder="Tytuł ogłoszenia (np. Mieszkanie po remoncie)"
+                                        />
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <textarea
+                                            name="description"
+                                            rows={5}
+                                            class="w-full bg-paper border border-line px-6 py-4 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium resize-none placeholder:opacity-30"
+                                            placeholder="Opisz dokładnie swój przedmiot lub usługę..."
+                                        ></textarea>
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute left-6 top-1/2 -translate-y-1/2 text-accent font-bold text-xs pointer-events-none group-focus-within:text-ink transition-colors">PLN</div>
+                                        <input
+                                            type="text"
+                                            name="price"
+                                            class="w-full bg-paper border border-line pl-16 pr-6 py-4 text-sm text-ink focus:outline-none focus:border-ink transition-all font-bold"
+                                            placeholder="Cena"
+                                        />
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute left-6 top-1/2 -translate-y-1/2 text-accent pointer-events-none group-focus-within:text-ink transition-colors">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            name="location"
+                                            class="w-full bg-paper border border-line pl-16 pr-6 py-4 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium"
+                                            placeholder="Lokalizacja (np. Tarnów)"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="md:col-span-2">
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Opis Szczegółowy</label
-                            >
-                            <textarea
-                                name="description"
-                                rows={5}
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium resize-none"
-                                placeholder="Opisz przedmiot, jego stan, historię..."
-                            ></textarea>
-                        </div>
+                            {/* Dynamic Category Fields */}
+                            <div id="category-fields-container" class="md:col-span-2 space-y-4">
+                                <label class="mono-label text-[10px] block text-accent mb-2 uppercase tracking-wider font-bold">Informacje Parametryczne</label>
+                                <div id="dynamic-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-paper/50 p-8 border border-dashed border-line">
+                                    {/* Populated via JS */}
+                                </div>
+                            </div>
 
-                        <div>
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Cena</label
-                            >
-                            <input
-                                type="text"
-                                name="price"
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
-                                placeholder="np. 2 850 PLN"
-                            />
-                        </div>
-
-                        <div>
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Lokalizacja</label
-                            >
-                            <input
-                                type="text"
-                                name="location"
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
-                                placeholder="np. Tarnów, Centrum"
-                            />
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Kategoria</label
-                            >
-                            <div class="relative">
-                                <select
-                                    id="category-select"
-                                    name="category_id"
-                                    class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer"
-                                >
-                                    <option value=""
-                                        >Wybierz kategorię...</option
-                                    >
-                                    {
-                                        categories?.map((cat) => (
-                                            <option value={cat.id} data-slug={cat.slug}>
-                                                {cat.name}
-                                            </option>
-                                        ))
-                                    }
-                                </select>
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-accent"
-                                >
-                                    <svg
-                                        class="fill-current h-4 w-4"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        ><path
-                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-                                        ></path>
-                                    </svg>
+                            <div class="md:col-span-2">
+                                <label class="mono-label text-[10px] block text-accent mb-6 uppercase tracking-wider font-bold">Materiały Wizualne (Max 3)</label>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="relative">
+                                        <input
+                                            type="file"
+                                            name="images"
+                                            accept="image/*"
+                                            multiple
+                                            class="w-full bg-paper border border-line px-6 py-8 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium file:mr-6 file:py-2 file:px-6 file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:bg-ink file:text-white hover:file:bg-accent file:transition-all file:cursor-pointer cursor-copy"
+                                        />
+                                        <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-line hidden md:block">
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Dynamic Category Fields */}
-                        <div id="category-fields-container" class="md:col-span-2 hidden animate-in fade-in slide-in-from-top-4 duration-500">
-                             <div class="h-px bg-line w-full my-4"></div>
-                             <div id="dynamic-fields" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                 {/* Will be populated by JS */}
-                             </div>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label
-                                class="mono-label text-[10px] block text-accent mb-2"
-                                >Zdjęcia (Galeria)</label
-                            >
-                            <input
-                                type="file"
-                                name="images"
-                                accept="image/*"
-                                multiple
-                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-ink file:text-white hover:file:bg-accent file:transition-all file:cursor-pointer"
-                            />
-                            <p class="text-[10px] mono-label text-accent mt-2">
-                                Możesz przesłać do 3 zdjęć (max 5MB każda).
+                        <div class="pt-12 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <p class="text-[10px] mono-label text-accent uppercase max-w-xs leading-relaxed">
+                                Wysyłając formularz akceptujesz regulamin platformy <span class="text-ink">TARNÓW.TECH</span>. Ogłoszenie zostanie zindeksowane natychmiastowo.
                             </p>
+                            <button
+                                type="submit"
+                                class="w-full sm:w-auto flex items-center justify-center gap-3 bg-ink text-white py-5 px-12 text-xs font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300 shadow-2xl shadow-ink/20 group"
+                            >
+                                <Save size={18} class="group-hover:rotate-12 transition-transform" /> Publikuj Ogłoszenie
+                            </button>
                         </div>
-                    </div>
-
-                    <div
-                        class="pt-8 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4"
-                    >
-                        <span
-                            class="text-[10px] mono-label text-accent uppercase"
-                        >
-                            Ogłoszenie zostanie opublikowane natychmiastowo.
-                        </span>
-                        <button
-                            type="submit"
-                            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-ink text-white py-4 px-8 text-xs font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300 shadow-lg shadow-ink/10"
-                        >
-                            <Save size={16} /> Publikuj Ogłoszenie
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </Layout>
 
+<style>
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--color-ink);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    .category-card:hover::before {
+        transform: scaleX(1);
+    }
+</style>
+
 <script>
-    const categorySelect = document.getElementById('category-select') as HTMLSelectElement;
-    const fieldsContainer = document.getElementById('category-fields-container');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const categoryCards = document.querySelectorAll('.category-card');
+    const backBtn = document.getElementById('back-to-step-1');
+    const hiddenCatId = document.getElementById('hidden-category-id') as HTMLInputElement;
+    const catNameDisplay = document.getElementById('selected-category-name');
     const dynamicFields = document.getElementById('dynamic-fields');
+    
+    // Step indicator elements
+    const dot2 = document.getElementById('dot-2');
+    const stepText = document.getElementById('step-text');
 
     const CATEGORY_FIELDS: Record<string, any[]> = {
         'nieruchomosci': [
@@ -327,16 +363,14 @@ if (Astro.request.method === "POST") {
     };
 
     function renderFields(slug: string) {
-        if (!dynamicFields || !fieldsContainer) return;
+        if (!dynamicFields) return;
 
         const fields = CATEGORY_FIELDS[slug];
         if (!fields) {
-            fieldsContainer.classList.add('hidden');
-            dynamicFields.innerHTML = '';
+            dynamicFields.innerHTML = '<p class="text-accent text-xs italic opacity-50">Ta kategoria nie wymaga dodatkowych danych.</p>';
             return;
         }
 
-        fieldsContainer.classList.remove('hidden');
         dynamicFields.innerHTML = fields.map(field => {
             const inputName = `details_${field.name}`;
             let inputHtml = '';
@@ -344,7 +378,7 @@ if (Astro.request.method === "POST") {
             if (field.type === 'select') {
                 inputHtml = `
                     <div class="relative">
-                        <select name="${inputName}" class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer">
+                        <select name="${inputName}" class="w-full bg-white border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium appearance-none cursor-pointer">
                             ${field.options.map((opt: string) => `<option value="${opt}">${opt}</option>`).join('')}
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-accent">
@@ -354,22 +388,53 @@ if (Astro.request.method === "POST") {
                 `;
             } else {
                 inputHtml = `
-                    <input type="${field.type}" name="${inputName}" placeholder="${field.placeholder || ''}" class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium" />
+                    <input type="${field.type}" name="${inputName}" placeholder="${field.placeholder || ''}" class="w-full bg-white border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium" />
                 `;
             }
 
             return `
                 <div class="${field.fullWidth ? 'md:col-span-2' : ''}">
-                    <label class="mono-label text-[10px] block text-accent mb-2 uppercase tracking-wider">${field.label}</label>
+                    <label class="mono-label text-[10px] block text-accent mb-2 uppercase tracking-wider font-bold">${field.label}</label>
                     ${inputHtml}
                 </div>
             `;
         }).join('');
     }
 
-    categorySelect?.addEventListener('change', () => {
-        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-        const slug = selectedOption.getAttribute('data-slug');
-        renderFields(slug || '');
+    categoryCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const id = (card as HTMLElement).dataset.id;
+            const slug = (card as HTMLElement).dataset.slug;
+            const name = (card as HTMLElement).dataset.name;
+
+            if (id && slug && name) {
+                // Update hidden inputs and labels
+                hiddenCatId.value = id;
+                if (catNameDisplay) catNameDisplay.innerText = name;
+                
+                // Render dynamic fields
+                renderFields(slug);
+
+                // Switch steps
+                step1?.classList.add('hidden');
+                step2?.classList.remove('hidden');
+                
+                // Update indicator
+                dot2?.classList.replace('bg-line', 'bg-ink');
+                if (stepText) stepText.innerText = 'Krok 2 z 2';
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+
+    backBtn?.addEventListener('click', () => {
+        step2?.classList.add('hidden');
+        step1?.classList.remove('hidden');
+        
+        // Update indicator
+        dot2?.classList.replace('bg-ink', 'bg-line');
+        if (stepText) stepText.innerText = 'Krok 1 z 2';
     });
 </script>
