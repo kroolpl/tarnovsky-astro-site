@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Plus, ChevronDown, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AuthDrawer } from './AuthDrawer';
+import { UserAvatar } from './UserAvatar';
 
 interface HeaderProps {
   onHome?: () => void;
   user?: any;
+  profile?: any;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onHome, user }) => {
+export const Header: React.FC<HeaderProps> = ({ onHome, user, profile }) => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
@@ -40,9 +42,14 @@ export const Header: React.FC<HeaderProps> = ({ onHome, user }) => {
 
           <div className="flex items-center gap-3 sm:gap-6">
             {user ? (
-              <a href="/dashboard" className="flex items-center gap-2 mono-label text-[10px] sm:text-xs hover:text-accent hover:opacity-100 transition-all uppercase">
-                <User size={14} />
-                <span>Konto</span>
+              <a href="/dashboard" className="flex items-center gap-3 group transition-all">
+                <UserAvatar
+                  url={profile?.avatar_url}
+                  fallback={profile?.full_name || user.email}
+                  size="sm"
+                  className="group-hover:ring-2 group-hover:ring-accent transition-all"
+                />
+                <span className="mono-label text-[10px] sm:text-xs text-ink uppercase group-hover:text-accent">Konto</span>
               </a>
             ) : (
               <div className="flex items-center gap-3 sm:gap-4">

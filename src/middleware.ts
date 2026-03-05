@@ -13,6 +13,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Get current session/user
     const { data: { user } } = await supabase.auth.getUser();
     context.locals.user = user;
+    context.locals.profile = null;
+
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+        context.locals.profile = profile;
+    }
 
     const requestPath = new URL(context.request.url).pathname;
 

@@ -10,7 +10,7 @@ import { LatestEntries } from "../components/LatestEntries";
 import { PromotedSidebar } from "../components/PromotedSidebar";
 import Footer from "../components/Footer.astro";
 
-const { supabase, user } = Astro.locals;
+const { supabase, user, profile } = Astro.locals;
 
 // Fetch Real Data from Supabase
 const { data: listings } = await supabase
@@ -18,7 +18,7 @@ const { data: listings } = await supabase
 	.select(
 		`
 		*,
-		profiles (username),
+		profiles (username, avatar_url),
 		categories (name)
 	`
 	)
@@ -34,6 +34,7 @@ const transformToListing = (item: any): Announcement => ({
 	location: item.location,
 	category: item.categories?.name || "Inne",
 	seller: item.profiles?.username || "Anonim",
+	seller_avatar: item.profiles?.avatar_url,
 	featured: item.is_featured,
 	tags: item.tags || [],
 });
@@ -52,7 +53,7 @@ const promotedItems =
 ---
 
 <Layout title="Główna">
-	<Header client:load user={Astro.locals.user} />
+	<Header client:load user={user} profile={profile} />
 
 	<main class="flex-grow">
 		<FeaturedSection items={featuredItems} client:visible />

@@ -3,7 +3,7 @@ import Layout from "../../../layouts/Layout.astro";
 import { Header } from "../../../components/Header";
 import { ArrowLeft, Save, Building2, Briefcase, Wrench, Gift, Car, ClipboardList, CheckCircle2 } from "lucide-react";
 
-const { supabase, user } = Astro.locals;
+const { supabase, user, profile } = Astro.locals;
 if (!user) {
     return Astro.redirect("/login");
 }
@@ -92,7 +92,8 @@ if (Astro.request.method === "POST") {
 <Layout title="Dodaj Ogłoszenie | TARNÓW.TECH">
     <Header
         client:load
-        user={supabase.auth.getUser().then(({ data }) => data.user)}
+        user={user}
+        profile={profile}
     />
     <div class="min-h-screen bg-paper text-ink pt-28 pb-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,7 +102,7 @@ if (Astro.request.method === "POST") {
                     href="/dashboard"
                     class="flex items-center gap-2 text-accent hover:text-ink transition-colors mono-label text-[10px] uppercase font-bold tracking-wider group"
                 >
-                    <ArrowLeft size={16} class="group-hover:-translate-x-1 transition-transform" /> Wróć do panelu
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do panelu
                 </a>
 
                 <div class="flex items-center gap-4">
@@ -293,7 +294,7 @@ if (Astro.request.method === "POST") {
                                 type="submit"
                                 class="w-full sm:w-auto flex items-center justify-center gap-3 bg-ink text-white py-5 px-12 text-xs font-bold uppercase tracking-widest hover:bg-accent transition-all duration-300 shadow-2xl shadow-ink/20 group"
                             >
-                                <Save size={18} class="group-hover:rotate-12 transition-transform" /> Publikuj Ogłoszenie
+                                <Save size={18} className="group-hover:rotate-12 transition-transform" /> Publikuj Ogłoszenie
                             </button>
                         </div>
                     </form>

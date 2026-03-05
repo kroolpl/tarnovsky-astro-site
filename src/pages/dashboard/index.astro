@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { LogOut, Plus, User as UserIcon, Settings } from "lucide-react";
+import { UserAvatar } from "../../components/UserAvatar";
 
 const { supabase, user } = Astro.locals;
 if (!user) {
@@ -61,15 +62,12 @@ const { data: listings } = await supabase
                 <aside class="w-full lg:w-64 space-y-6">
                     <div class="bg-white border border-line p-6 shadow-sm">
                         <div class="flex items-center gap-4 mb-8">
-                            <div
-                                class="w-10 h-10 bg-ink text-white flex items-center justify-center text-lg font-bold"
-                            >
-                                {
-                                    (profile?.username ||
-                                        user.email ||
-                                        "?")[0].toUpperCase()
-                                }
-                            </div>
+                            <UserAvatar 
+                                url={profile?.avatar_url} 
+                                fallback={profile?.full_name || user.email}
+                                size="md"
+                                client:load
+                            />
                             <div>
                                 <div class="font-bold text-sm tracking-tight">
                                     {profile?.username || "Użytkownik"}

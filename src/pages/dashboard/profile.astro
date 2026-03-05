@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Upload, User as UserIcon } from "lucide-react";
+import { UserAvatar } from "../../components/UserAvatar";
 
 const { supabase, user } = Astro.locals;
 if (!user) {
@@ -21,22 +22,47 @@ if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
     const username = formData.get("username")?.toString();
     const full_name = formData.get("full_name")?.toString();
+    
+    const avatarFile = formData.get("avatar") as File;
+    let avatar_url = profile?.avatar_url;
 
-    const updates = {
-        id: user.id,
-        username,
-        full_name,
-    };
+    if (avatarFile && avatarFile.size > 0) {
+        const fileExt = avatarFile.name.split(".").pop();
+        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-    const { error: updateError } = await supabase
-        .from("profiles")
-        .upsert(updates);
+        const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, avatarFile, { upsert: true });
 
-    if (updateError) {
-        error = updateError.message;
-    } else {
-        success = true;
-        profile = { ...profile, ...updates };
+        if (uploadError) {
+            error = `Błąd przesyłania awatara: ${uploadError.message}`;
+        } else {
+            const { data: publicUrlData } = supabase.storage
+                .from("avatars")
+                .getPublicUrl(filePath);
+            avatar_url = publicUrlData.publicUrl;
+        }
+    }
+
+    if (!error) {
+        const updates = {
+            id: user.id,
+            username,
+            full_name,
+            avatar_url,
+        };
+
+        const { error: updateError } = await supabase
+            .from("profiles")
+            .upsert(updates);
+
+        if (updateError) {
+            error = updateError.message;
+        } else {
+            success = true;
+            profile = { ...profile, ...updates };
+        }
     }
 }
 ---
@@ -67,7 +93,7 @@ if (Astro.request.method === "POST") {
                     </p>
                 </div>
 
-                <form method="POST" class="p-6 md:p-8 space-y-6">
+                <form method="POST" enctype="multipart/form-data" class="p-6 md:p-8 space-y-6">
                     {
                         error && (
                             <div class="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl text-sm">
@@ -84,49 +110,73 @@ if (Astro.request.method === "POST") {
                         )
                     }
 
-                    <div class="space-y-4">
-                        <div>
-                            <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Email (Read Only)</label
-                            >
-                            <input
-                                type="email"
-                                value={user.email}
-                                disabled
-                                class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed"
-                            />
-                            <p class="text-xs text-slate-500 mt-2">
-                                Your email is managed in your account settings.
-                            </p>
+                    <div class="space-y-8">
+                        {/* Avatar Section */}
+                        <div class="flex flex-col sm:flex-row items-center gap-8 p-6 bg-slate-950 border border-slate-700 rounded-2xl">
+                            <div class="relative group">
+                                <UserAvatar 
+                                    url={profile?.avatar_url} 
+                                    fallback={profile?.full_name || user.email}
+                                    size="lg"
+                                    className="ring-4 ring-slate-800"
+                                />
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                    <Upload size={20} className="text-white" />
+                                </div>
+                            </div>
+                            <div class="flex-grow space-y-3 text-center sm:text-left">
+                                <h3 class="text-lg font-semibold text-white">Twoje zdjęcie profilowe</h3>
+                                <p class="text-sm text-slate-400">Prześlij zdjęcie, aby inni mogli Cię rozpoznać.</p>
+                                <label class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg cursor-pointer transition-all">
+                                    <Upload size={14} />
+                                    <span>Wybierz plik</span>
+                                    <input type="file" name="avatar" accept="image/*" class="hidden" id="avatar-input" />
+                                </label>
+                                <div id="file-name" class="text-[10px] mono-label text-blue-400 h-4 uppercase"></div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Username</label
-                            >
-                            <input
-                                type="text"
-                                name="username"
-                                value={profile?.username || ""}
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="Choose a unique username"
-                            />
-                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label
+                                    class="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-tight"
+                                    >Email (Tylko do odczytu)</label
+                                >
+                                <input
+                                    type="email"
+                                    value={user.email}
+                                    disabled
+                                    class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed font-medium"
+                                />
+                            </div>
 
-                        <div>
-                            <label
-                                class="block text-sm font-medium text-slate-300 mb-2"
-                                >Full Name</label
-                            >
-                            <input
-                                type="text"
-                                name="full_name"
-                                value={profile?.full_name || ""}
-                                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                placeholder="Jane Doe"
-                            />
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-tight"
+                                    >Nazwa użytkownika</label
+                                >
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={profile?.username || ""}
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                                    placeholder="np. jan_kowalski"
+                                />
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-tight"
+                                    >Imię i Nazwisko</label
+                                >
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    value={profile?.full_name || ""}
+                                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                                    placeholder="Jan Kowalski"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -145,3 +195,15 @@ if (Astro.request.method === "POST") {
         </div>
     </div>
 </Layout>
+
+<script>
+    const avatarInput = document.getElementById('avatar-input') as HTMLInputElement;
+    const fileNameDisplay = document.getElementById('file-name');
+
+    avatarInput?.addEventListener('change', (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file && fileNameDisplay) {
+            fileNameDisplay.textContent = `Wybrano: ${file.name}`;
+        }
+    });
+</script>

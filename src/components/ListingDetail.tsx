@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Share2, Heart, MapPin, Calendar, Tag, User, MessageSquare, Phone, ShieldCheck } from 'lucide-react';
 import type { Announcement } from './FeaturedSection';
+import { UserAvatar } from './UserAvatar';
 
 interface ListingDetailProps {
     listing: Announcement;
@@ -201,9 +202,12 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                                 Informacje o sprzedawcy
                             </h3>
                             <div className="flex items-center gap-4 mb-5 sm:mb-6">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/20 rounded-full flex items-center justify-center text-accent font-bold text-sm sm:text-base">
-                                    {listing.seller?.[0] || 'U'}
-                                </div>
+                                <UserAvatar
+                                    url={listing.seller_avatar}
+                                    fallback={listing.seller}
+                                    size="md"
+                                    className="ring-2 ring-line"
+                                />
                                 <div>
                                     <p className="font-bold text-xs sm:text-sm">{listing.seller || 'Użytkownik_829'}</p>
                                     <p className="text-[8px] sm:text-[10px] opacity-40 mono-label">Na platformie od 2022</p>
