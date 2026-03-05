@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import { Header } from "../../../components/Header";
 import { ArrowLeft, Save, Building2, Briefcase, Wrench, Gift, Car, ClipboardList, CheckCircle2 } from "lucide-react";
 
 const { supabase, user } = Astro.locals;
@@ -89,6 +90,10 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout title="Dodaj Ogłoszenie | TARNÓW.TECH">
+    <Header
+        client:load
+        user={supabase.auth.getUser().then(({ data }) => data.user)}
+    />
     <div class="min-h-screen bg-paper text-ink pt-28 pb-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-12 flex items-center justify-between">
