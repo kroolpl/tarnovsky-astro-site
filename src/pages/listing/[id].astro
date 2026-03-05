@@ -13,7 +13,7 @@ const { data: listingData } = await supabase
     .from("listings")
     .select(`
         *,
-        profiles (username, avatar_url),
+        profiles (username, avatar_url, created_at),
         categories (name)
     `)
     .eq("id", id)
@@ -35,6 +35,7 @@ const listing: Announcement = {
     category_details: listingData.category_details,
     seller: listingData.profiles?.username || "Anonim",
     seller_avatar: listingData.profiles?.avatar_url,
+    seller_joined_at: listingData.profiles?.created_at,
     featured: listingData.is_featured,
     tags: listingData.tags || [],
 };

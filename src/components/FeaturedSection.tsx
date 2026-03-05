@@ -15,6 +15,7 @@ export interface Announcement {
     category_details?: Record<string, any>;
     seller?: string;
     seller_avatar?: string | null;
+    seller_joined_at?: string;
 }
 
 export const FeaturedSection = ({ items }: { items: Announcement[] }) => (

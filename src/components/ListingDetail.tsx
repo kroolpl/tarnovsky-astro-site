@@ -100,8 +100,8 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
                                 {(() => {
                                     const params = [
-                                        { label: 'Kategoria', value: listing.category || 'Elektronika' },
-                                        { label: 'Lokalizacja', value: listing.location || 'Tarnów' },
+                                        { label: 'Kategoria', value: listing.category },
+                                        { label: 'Lokalizacja', value: listing.location || 'Brak danych' },
                                     ];
 
                                     // Add dynamic category details if they exist
@@ -165,7 +165,7 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                                 </div>
                                 <div className="flex items-center gap-3 text-xs sm:text-sm opacity-60">
                                     <Tag size={14} className="text-accent" />
-                                    ID: #8293102
+                                    ID: #{listing.id.split('-')[0].toUpperCase()}
                                 </div>
                             </div>
 
@@ -200,8 +200,10 @@ export const ListingDetail: React.FC<ListingDetailProps> = ({ listing, onBack })
                                     className="ring-2 ring-line"
                                 />
                                 <div>
-                                    <p className="font-bold text-xs sm:text-sm">{listing.seller || 'Użytkownik_829'}</p>
-                                    <p className="text-[8px] sm:text-[10px] opacity-40 mono-label">Na platformie od 2022</p>
+                                    <p className="font-bold text-xs sm:text-sm">{listing.seller}</p>
+                                    <p className="text-[8px] sm:text-[10px] opacity-40 mono-label">
+                                        Na platformie od {listing.seller_joined_at ? new Date(listing.seller_joined_at).getFullYear() : 'niedawna'}
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 text-[8px] sm:text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
