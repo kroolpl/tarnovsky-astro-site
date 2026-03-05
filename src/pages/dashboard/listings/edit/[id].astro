@@ -278,33 +278,76 @@ if (Astro.request.method === "POST") {
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="mono-label text-[10px] block text-accent mb-6 uppercase tracking-wider font-bold">Zdjęcia (Max 3)</label>
+                                <label class="mono-label text-[10px] block text-accent mb-4 uppercase tracking-wider font-bold">Zarządzanie Zdjęciami <span class="text-line">(max. 3 sztuki łącznie)</span></label>
                                 
-                                {/* Current Images */}
-                                <div class="grid grid-cols-3 gap-6 mb-8">
-                                    {listing.image_urls?.map((url: string) => (
-                                        <div class="relative aspect-[4/3] border border-line bg-paper group overflow-hidden">
-                                            <img src={url} alt="" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                            <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
-                                                <label class="flex flex-col items-center gap-2 text-white text-[8px] mono-label cursor-pointer text-center">
-                                                    <input type="checkbox" name="keep_images" value={url} checked class="hidden peer" />
-                                                    <span class="peer-checked:hidden text-red-400 font-bold bg-white/10 px-2 py-1">DO USUNIĘCIA</span>
-                                                    <span class="peer-unchecked:hidden bg-white/10 px-2 py-1">ZATWIERDŹ USUNIĘCIE</span>
-                                                    <span class="peer-checked:inline hidden underline">ZACHOWAJ ZDJĘCIE</span>
+                                {/* Existing Images Management */}
+                                <div id="existing-images-container" class="grid grid-cols-3 gap-4 mb-6">
+                                    {listing.image_urls?.map((url: string, idx: number) => (
+                                        <div class="relative aspect-[4/3] border border-line bg-paper group overflow-hidden" data-url={url}>
+                                            <img src={url} alt="" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                            <div class="absolute inset-x-0 bottom-0 bg-ink/80 p-2 transform translate-y-full group-hover:translate-y-0 transition-transform">
+                                                <label class="flex items-center justify-center gap-2 text-white text-[9px] mono-label cursor-pointer uppercase tracking-widest">
+                                                    <input type="checkbox" name="keep_images" value={url} checked class="keep-image-checkbox hidden peer" />
+                                                    <span class="peer-checked:hidden text-red-400 font-bold">USUŃ</span>
+                                                    <span class="peer-unchecked:hidden">ZACHOWAJ</span>
                                                 </label>
                                             </div>
+                                            <div class="absolute top-2 right-2 peer-unchecked:block hidden">
+                                                <div class="bg-red-500 text-white p-1 rounded-full shadow-lg">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                                </div>
+                                            </div>
+                                            {idx === 0 && (
+                                                <div class="absolute top-2 left-2 bg-ink text-white mono-label text-[8px] px-2 py-[2px] uppercase tracking-widest">
+                                                    Główne
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
 
-                                <div class="relative">
+                                {/* Drop Zone for New Uploads */}
+                                <div
+                                    id="drop-zone"
+                                    class="relative border-2 border-dashed border-line bg-paper/50 p-10 text-center cursor-pointer transition-all duration-300 hover:border-ink hover:bg-paper group"
+                                >
                                     <input
                                         type="file"
+                                        id="file-input"
                                         name="images"
-                                        accept="image/*"
+                                        accept="image/*,image/heic,image/heif"
                                         multiple
-                                        class="w-full bg-paper border border-line px-6 py-8 text-sm text-ink focus:outline-none focus:border-ink transition-all font-medium file:mr-6 file:py-2 file:px-6 file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:bg-ink file:text-white hover:file:bg-accent file:transition-all file:cursor-pointer cursor-copy"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     />
+                                    <div id="drop-zone-content" class="pointer-events-none flex flex-col items-center gap-4">
+                                        <div class="w-16 h-16 border border-line bg-white flex items-center justify-center group-hover:border-ink transition-all duration-300">
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-accent group-hover:text-ink transition-colors">
+                                                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>
+                                                <path d="M12 12v9"/><path d="m16 16-4-4-4 4"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-ink text-center">Dodaj nowe zdjęcia</p>
+                                            <p class="text-xs text-accent mt-1 text-center">Przeciągnij tutaj lub <span class="underline cursor-pointer group-hover:text-ink">wybierz pliki</span></p>
+                                        </div>
+                                        <p class="mono-label text-[9px] text-accent uppercase tracking-widest text-center">
+                                            JPG, PNG, WEBP, HEIC — max. 10 MB / zdjęcie
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Preview Grid for New Uploads */}
+                                <div id="preview-grid" class="grid grid-cols-3 gap-4 mt-4 hidden">
+                                    {/* Filled by JS */}
+                                </div>
+
+                                <div id="upload-counter" class="hidden mt-4 pt-4 border-t border-line mono-label text-[10px] text-accent uppercase tracking-wider flex items-center gap-4">
+                                    <span id="count-text"></span>
+                                    <div class="flex gap-1 h-1.5 flex-1 max-w-[120px]">
+                                        <div class="flex-1 bg-line" id="bar-1"></div>
+                                        <div class="flex-1 bg-line" id="bar-2"></div>
+                                        <div class="flex-1 bg-line" id="bar-3"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -467,9 +510,47 @@ if (Astro.request.method === "POST") {
         if (stepText) stepText.innerText = 'Zmień Kategorię';
     });
 
-    // Image removal UI
-    const checkboxes = document.querySelectorAll('input[name="keep_images"]');
-    checkboxes.forEach(cb => {
+    // ============================================================
+    // Advanced Drag & Drop + Image Management
+    // ============================================================
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewGrid = document.getElementById('preview-grid');
+    const uploadCounter = document.getElementById('upload-counter');
+    const countText = document.getElementById('count-text');
+    const keepCheckboxes = document.querySelectorAll('.keep-image-checkbox');
+    const MAX_FILES = 3;
+
+    let selectedFiles = [];
+    let keptImagesCount = Array.from(keepCheckboxes).filter(cb => cb.checked).length;
+
+    function updateCounter() {
+        if (!uploadCounter || !countText) return;
+        const total = keptImagesCount + selectedFiles.length;
+        uploadCounter.classList.toggle('hidden', total === 0);
+        countText.textContent = `${total} z ${MAX_FILES} zdjęć ogółem`;
+        for (let i = 1; i <= MAX_FILES; i++) {
+            const bar = document.getElementById(`bar-${i}`);
+            if (bar) {
+                bar.className = `flex-1 ${i <= total ? 'bg-ink' : 'bg-line'}`;
+            }
+        }
+    }
+
+    function updateDropZoneState() {
+        if (!dropZone) return;
+        const total = keptImagesCount + selectedFiles.length;
+        const full = total >= MAX_FILES;
+        dropZone.style.opacity = full ? '0.4' : '1';
+        dropZone.style.pointerEvents = full ? 'none' : '';
+        if (fileInput) fileInput.disabled = full;
+    }
+
+    // Initial sync
+    updateCounter();
+    updateDropZoneState();
+
+    keepCheckboxes.forEach(cb => {
         cb.addEventListener('change', (e) => {
             const container = e.target.closest('.relative');
             if (!e.target.checked) {
@@ -477,6 +558,87 @@ if (Astro.request.method === "POST") {
             } else {
                 container?.classList.remove('opacity-30');
             }
+            keptImagesCount = Array.from(keepCheckboxes).filter(cb => cb.checked).length;
+            updateCounter();
+            updateDropZoneState();
         });
+    });
+
+    function buildDataTransfer(files) {
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        return dt;
+    }
+
+    function renderPreviews() {
+        if (!previewGrid) return;
+        previewGrid.innerHTML = '';
+        previewGrid.classList.toggle('hidden', selectedFiles.length === 0);
+
+        selectedFiles.forEach((file, idx) => {
+            const url = URL.createObjectURL(file);
+            const card = document.createElement('div');
+            card.className = 'relative aspect-[4/3] border border-line bg-paper overflow-hidden group';
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = file.name;
+            img.className = 'w-full h-full object-cover transition-transform duration-500 group-hover:scale-105';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'mt-1 flex items-center gap-1 text-red-300 hover:text-red-100 text-[9px] mono-label uppercase tracking-widest transition-colors';
+            removeBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Usuń`;
+            
+            removeBtn.addEventListener('click', () => {
+                URL.revokeObjectURL(url);
+                selectedFiles.splice(idx, 1);
+                if (fileInput) fileInput.files = buildDataTransfer(selectedFiles).files;
+                renderPreviews();
+                updateCounter();
+                updateDropZoneState();
+            });
+
+            overlay.appendChild(removeBtn);
+            card.append(img, overlay);
+            previewGrid.appendChild(card);
+        });
+    }
+
+    function addFiles(newFiles) {
+        const remaining = MAX_FILES - (keptImagesCount + selectedFiles.length);
+        if (remaining <= 0) return;
+
+        const augmentedNewFiles = newFiles.slice(0, remaining);
+        selectedFiles = [...selectedFiles, ...augmentedNewFiles];
+        
+        if (fileInput) fileInput.files = buildDataTransfer(selectedFiles).files;
+        renderPreviews();
+        updateCounter();
+        updateDropZoneState();
+    }
+
+    fileInput?.addEventListener('change', () => {
+        if (!fileInput.files) return;
+        addFiles(Array.from(fileInput.files));
+    });
+
+    dropZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-ink', 'bg-paper');
+    });
+
+    dropZone?.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-ink', 'bg-paper');
+    });
+
+    dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-ink', 'bg-paper');
+        const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+        addFiles(files);
     });
 </script>
