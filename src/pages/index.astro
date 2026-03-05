@@ -12,17 +12,45 @@ import Footer from "../components/Footer.astro";
 
 const { supabase, user, profile } = Astro.locals;
 
-// Fetch Real Data from Supabase
-const { data: listings } = await supabase
+// Parse Search Parameters
+const url = new URL(Astro.request.url);
+const searchQ = url.searchParams.get('q');
+const hasImages = url.searchParams.get('has_images') === 'true';
+const isToday = url.searchParams.get('today') === 'true';
+const isSearching = !!(searchQ || hasImages || isToday);
+
+// Fetch Real Data from Supabase with Dynamic Filters
+let query = supabase
 	.from("listings")
-	.select(
-		`
+	.select(`
 		*,
 		profiles (username, avatar_url),
 		categories (name)
-	`
-	)
-	.order("created_at", { ascending: false });
+	`);
+
+if (searchQ) {
+	query = query.or(`title.ilike.%${searchQ}%,description.ilike.%${searchQ}%`);
+}
+
+if (hasImages) {
+	// Filter for listings with at least one image
+	query = query.not('image_urls', 'is', 'null');
+}
+
+if (isToday) {
+	const todayStart = new Date();
+	todayStart.setHours(0, 0, 0, 0);
+	query = query.gte('created_at', todayStart.toISOString());
+}
+
+const { data: listings } = await query.order("created_at", { ascending: false });
+
+// For "hasImages" we might need an additional client-side filter if the DB column is an empty array but not null
+// However, Supabase not.is.null is a good start. Let's add a post-fetch filter for empty arrays just in case.
+const filteredListings = listings?.filter(item => {
+	if (hasImages && (!item.image_urls || item.image_urls.length === 0)) return false;
+	return true;
+}) || [];
 
 const transformToListing = (item: any): Announcement => ({
 	id: item.id,
@@ -40,30 +68,37 @@ const transformToListing = (item: any): Announcement => ({
 });
 
 const featuredItems =
-	listings
+	filteredListings
 		?.filter((l) => l.is_featured)
 		.map(transformToListing)
 		.slice(0, 3) || [];
-const latestItems = listings?.map(transformToListing).slice(0, 5) || [];
+const latestItems = filteredListings?.map(transformToListing) || [];
 const promotedItems =
-	listings
+	filteredListings
 		?.filter((l) => l.is_promoted)
 		.map(transformToListing)
 		.slice(0, 2) || [];
 ---
 
-<Layout title="Główna">
+<Layout title={isSearching ? `Szukaj: ${searchQ || 'Filtry'}` : "Główna"}>
 	<Header client:load user={user} profile={profile} />
 
 	<main class="flex-grow">
-		<FeaturedSection items={featuredItems} client:visible />
-		<SearchBar client:visible />
+		{!isSearching && <FeaturedSection items={featuredItems} client:visible />}
+		<SearchBar client:load />
 
 		<div
 			class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col lg:flex-row gap-12 mb-16 sm:mb-24"
 		>
-			<LatestEntries items={latestItems} client:visible />
-			<PromotedSidebar items={promotedItems} client:visible />
+			<LatestEntries 
+				items={latestItems} 
+				title={isSearching ? `Wyniki wyszukiwania (${latestItems.length})` : "Najnowsze wpisy"}
+				client:load 
+			/>
+			
+			{!isSearching && latestItems.length > 0 && (
+				<PromotedSidebar items={promotedItems} client:visible />
+			)}
 		</div>
 	</main>
 
