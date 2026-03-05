@@ -1,0 +1,172 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { Users, Tag, Package, ArrowLeft } from "lucide-react";
+
+const { supabase, user } = Astro.locals;
+if (!user) {
+    return Astro.redirect("/login");
+}
+
+// Fetch stats for the dashboard
+let totalUsers = 0;
+let totalListings = 0;
+let totalCategories = 0;
+
+const [
+    { count: usersCount },
+    { count: listingsCount },
+    { count: categoriesCount },
+] = await Promise.all([
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("listings").select("*", { count: "exact", head: true }),
+    supabase.from("categories").select("*", { count: "exact", head: true }),
+]);
+
+totalUsers = usersCount || 0;
+totalListings = listingsCount || 0;
+totalCategories = categoriesCount || 0;
+---
+
+<Layout title="Admin Panel">
+    <div class="min-h-screen bg-paper text-ink">
+        <!-- Admin Navbar -->
+        <nav class="bg-white border-b border-line sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16 sm:h-20">
+                    <div class="flex items-center space-x-4">
+                        <span
+                            class="text-xl font-bold tracking-tighter text-ink uppercase"
+                            >Admin Panel</span
+                        >
+                        <span class="text-line">|</span>
+                        <a
+                            href="/dashboard"
+                            class="mono-label text-[10px] text-accent hover:text-ink transition-colors flex items-center gap-2"
+                        >
+                            <ArrowLeft size={14} /> Powrót do Dashboardu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div class="mb-12">
+                <h1 class="text-3xl font-bold tracking-tight uppercase">
+                    Przegląd Systemu
+                </h1>
+                <p class="mono-label text-[10px] text-accent mt-2 uppercase">
+                    Zarządzanie danymi, użytkownikami i kategoriami
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Stat Card 1 -->
+                <div
+                    class="bg-white border border-line p-8 shadow-sm flex items-center gap-6"
+                >
+                    <div
+                        class="w-14 h-14 bg-paper flex items-center justify-center text-ink border border-line"
+                    >
+                        <Users size={24} />
+                    </div>
+                    <div>
+                        <div
+                            class="mono-label text-[10px] text-accent uppercase mb-1"
+                        >
+                            Użytkownicy
+                        </div>
+                        <div class="text-3xl font-bold tracking-tight">
+                            {totalUsers}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stat Card 2 -->
+                <div
+                    class="bg-white border border-line p-8 shadow-sm flex items-center gap-6"
+                >
+                    <div
+                        class="w-14 h-14 bg-paper flex items-center justify-center text-ink border border-line"
+                    >
+                        <Package size={24} />
+                    </div>
+                    <div>
+                        <div
+                            class="mono-label text-[10px] text-accent uppercase mb-1"
+                        >
+                            Ogłoszenia
+                        </div>
+                        <div class="text-3xl font-bold tracking-tight">
+                            {totalListings}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div
+                    class="bg-white border border-line p-8 shadow-sm flex items-center gap-6"
+                >
+                    <div
+                        class="w-14 h-14 bg-paper flex items-center justify-center text-ink border border-line"
+                    >
+                        <Tag size={24} />
+                    </div>
+                    <div>
+                        <div
+                            class="mono-label text-[10px] text-accent uppercase mb-1"
+                        >
+                            Kategorie
+                        </div>
+                        <div class="text-3xl font-bold tracking-tight">
+                            {totalCategories}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <a
+                    href="/admin/users"
+                    class="group bg-white border border-line p-8 shadow-sm hover:border-accent transition-all duration-300"
+                >
+                    <div class="flex items-center gap-4 mb-4">
+                        <div
+                            class="w-10 h-10 bg-paper flex items-center justify-center text-ink border border-line group-hover:bg-ink group-hover:text-white transition-all"
+                        >
+                            <Users size={18} />
+                        </div>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">
+                            Zarządzaj Użytkownikami
+                        </h2>
+                    </div>
+                    <p class="text-xs text-accent leading-relaxed">
+                        Przeglądaj zarejestrowanych użytkowników, nadawaj
+                        uprawnienia administratora lub usuwaj konta.
+                    </p>
+                </a>
+
+                <a
+                    href="/admin/categories"
+                    class="group bg-white border border-line p-8 shadow-sm hover:border-accent transition-all duration-300"
+                >
+                    <div class="flex items-center gap-4 mb-4">
+                        <div
+                            class="w-10 h-10 bg-paper flex items-center justify-center text-ink border border-line group-hover:bg-ink group-hover:text-white transition-all"
+                        >
+                            <Tag size={18} />
+                        </div>
+                        <h2 class="text-xl font-bold tracking-tight uppercase">
+                            Zarządzaj Kategoriami
+                        </h2>
+                    </div>
+                    <p class="text-xs text-accent leading-relaxed">
+                        Dodawaj, usuwaj lub edytuj kategorie ogłoszeń, aby
+                        utrzymać porządek w systemie.
+                    </p>
+                </a>
+            </div>
+        </main>
+    </div>
+</Layout>

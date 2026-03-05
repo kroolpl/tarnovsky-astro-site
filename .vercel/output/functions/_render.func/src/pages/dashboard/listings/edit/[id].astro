@@ -1,0 +1,275 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import { ArrowLeft, Save, Trash2 } from "lucide-react";
+
+const { supabase, user } = Astro.locals;
+if (!user) {
+    return Astro.redirect("/login");
+}
+
+const { id } = Astro.params;
+
+// Fetch existing listing
+const { data: listing, error: fetchError } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+if (fetchError || !listing) {
+    return Astro.redirect("/dashboard");
+}
+
+// Security check: only owner can edit
+if (listing.seller_id !== user.id) {
+    return Astro.redirect("/dashboard");
+}
+
+let error = "";
+let success = false;
+
+// Fetch categories for the select input
+const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name");
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action")?.toString();
+
+    if (action === "delete") {
+        const { error: deleteError } = await supabase
+            .from("listings")
+            .delete()
+            .eq("id", id);
+        
+        if (deleteError) {
+            error = deleteError.message;
+        } else {
+            return Astro.redirect("/dashboard?deleted=true");
+        }
+    } else {
+        const title = formData.get("title")?.toString();
+        const description = formData.get("description")?.toString();
+        const price = formData.get("price")?.toString();
+        const location = formData.get("location")?.toString();
+        const category_id = formData.get("category_id")?.toString();
+        
+        // Handle images
+        const imageFiles = formData.getAll("images") as File[];
+        const keepImages = formData.getAll("keep_images") as string[];
+        
+        let new_image_urls = [...keepImages];
+
+        if (title) {
+            // Only upload new images if we have space (up to 3)
+            const remainingSpace = 3 - new_image_urls.length;
+            const validImages = imageFiles.filter((file) => file.size > 0).slice(0, remainingSpace);
+
+            for (const imageFile of validImages) {
+                const fileExt = imageFile.name.split(".").pop() || "jpg";
+                const fileName = `${crypto.randomUUID()}.${fileExt}`;
+                const filePath = `${user.id}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from("listings")
+                    .upload(filePath, imageFile);
+
+                if (uploadError) {
+                    error = `Błąd przesyłania zdjęcia: ${uploadError.message}`;
+                    break;
+                } else {
+                    const { data } = supabase.storage
+                        .from("listings")
+                        .getPublicUrl(filePath);
+                    new_image_urls.push(data.publicUrl);
+                }
+            }
+
+            if (!error) {
+                const { error: updateError } = await supabase
+                    .from("listings")
+                    .update({
+                        title,
+                        description,
+                        price,
+                        location,
+                        category_id: category_id || null,
+                        image_urls: new_image_urls,
+                    })
+                    .eq("id", id);
+
+                if (updateError) {
+                    error = updateError.message;
+                } else {
+                    return Astro.redirect("/dashboard?updated=true");
+                }
+            }
+        } else {
+            error = "Title is required.";
+        }
+    }
+}
+---
+
+<Layout title={`Edytuj: ${listing.title} | TARNÓW.TECH`}>
+    <div class="min-h-screen bg-paper text-ink pt-28 pb-16">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 flex items-center justify-between">
+                <a
+                    href="/dashboard"
+                    class="flex items-center gap-2 text-accent hover:text-ink transition-colors mono-label text-[10px] uppercase font-bold tracking-wider"
+                >
+                    <ArrowLeft size={16} /> Wróć do panelu
+                </a>
+
+                <form method="POST" onsubmit="return confirm('Czy na pewno chcesz usunąć to ogłoszenie?')">
+                    <input type="hidden" name="action" value="delete" />
+                    <button
+                        type="submit"
+                        class="flex items-center gap-2 text-red-500 hover:text-red-700 transition-colors mono-label text-[10px] uppercase font-bold tracking-wider"
+                    >
+                        <Trash2 size={16} /> Usuń ogłoszenie
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white border border-line shadow-xl relative">
+                <div class="absolute top-0 left-0 w-2 h-full bg-accent"></div>
+                
+                <div class="p-8 md:p-10 border-b border-line">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="mono-label text-[10px] text-accent mb-2 block">Edycja Ogłoszenia</span>
+                            <h1 class="text-3xl font-bold text-ink tracking-tighter uppercase">
+                                {listing.title}
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="p-8 md:p-10 space-y-8">
+                    {error && (
+                        <div class="bg-red-50 border-l-2 border-red-500 text-ink p-4 text-[11px] font-medium">
+                            BŁĄD SYSTEMU: {error}
+                        </div>
+                    )}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="md:col-span-2">
+                            <label class="mono-label text-[10px] block text-accent mb-2">Tytuł Ogłoszenia <span class="text-red-500">*</span></label>
+                            <input
+                                type="text"
+                                name="title"
+                                value={listing.title}
+                                required
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                            />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="mono-label text-[10px] block text-accent mb-2">Opis Szczegółowy</label>
+                            <textarea
+                                name="description"
+                                rows={5}
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium resize-none"
+                            >{listing.description}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="mono-label text-[10px] block text-accent mb-2">Cena</label>
+                            <input
+                                type="text"
+                                name="price"
+                                value={listing.price}
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                            />
+                        </div>
+
+                        <div>
+                            <label class="mono-label text-[10px] block text-accent mb-2">Lokalizacja</label>
+                            <input
+                                type="text"
+                                name="location"
+                                value={listing.location}
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium"
+                            />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="mono-label text-[10px] block text-accent mb-2">Kategoria</label>
+                            <select
+                                name="category_id"
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium appearance-none cursor-pointer"
+                            >
+                                <option value="">Wybierz kategorię...</option>
+                                {categories?.map((cat) => (
+                                    <option value={cat.id} selected={cat.id === listing.category_id}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="mono-label text-[10px] block text-accent mb-2">Zarządzaj Zdjęciami</label>
+                            
+                            {/* Current Images */}
+                            <div class="grid grid-cols-3 gap-4 mb-4">
+                                {listing.image_urls?.map((url, idx) => (
+                                    <div class="relative aspect-video border border-line bg-paper group">
+                                        <img src={url} alt="" class="w-full h-full object-cover" />
+                                        <div class="absolute inset-0 bg-ink/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <label class="flex items-center gap-2 text-white text-[9px] mono-label cursor-pointer">
+                                                <input type="checkbox" name="keep_images" value={url} checked class="hidden peer" />
+                                                <span class="peer-checked:hidden text-red-400">USUNIĘTE</span>
+                                                <span class="peer-unchecked:hidden">ZACHOWAJ</span>
+                                            </label>
+                                        </div>
+                                        {/* Hidden input to ensure value is sent if checkbox is checked */}
+                                        <input type="hidden" name="current_urls" value={url} />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <input
+                                type="file"
+                                name="images"
+                                accept="image/*"
+                                multiple
+                                class="w-full bg-paper border border-line px-4 py-3 text-sm text-ink focus:outline-none focus:border-accent transition-all font-medium file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-ink file:text-white hover:file:bg-accent"
+                            />
+                            <p class="text-[10px] mono-label text-accent mt-2">
+                                Łącznie możesz mieć do 3 zdjęć. Pozostaw zaznaczone te, które chcesz zachować.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <button
+                            type="submit"
+                            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-ink text-white py-4 px-8 text-xs font-bold uppercase tracking-widest hover:bg-accent transition-all shadow-lg"
+                        >
+                            <Save size={16} /> Zapisz Zmiany
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    // Simple UI helper for image checkboxes
+    const checkboxes = document.querySelectorAll('input[name="keep_images"]');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const container = (e.target as HTMLInputElement).closest('.relative');
+            if (!(e.target as HTMLInputElement).checked) {
+                container?.classList.add('opacity-30');
+            } else {
+                container?.classList.remove('opacity-30');
+            }
+        });
+    });
+</script>

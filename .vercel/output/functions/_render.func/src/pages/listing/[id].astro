@@ -1,0 +1,59 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { Header } from "../../components/Header";
+import { ListingDetail } from "../../components/ListingDetail";
+import Footer from "../../components/Footer.astro";
+import type { Announcement } from "../../components/FeaturedSection";
+
+const { id } = Astro.params;
+const { supabase, user, profile } = Astro.locals;
+
+// Fetch listing from Supabase with relations
+const { data: listingData } = await supabase
+    .from("listings")
+    .select(`
+        *,
+        profiles (username, avatar_url),
+        categories (name)
+    `)
+    .eq("id", id)
+    .single();
+
+if (!listingData) {
+    return Astro.redirect("/404");
+}
+
+const listing: Announcement = {
+    id: listingData.id,
+    date: new Date(listingData.created_at).toISOString().split("T")[0],
+    title: listingData.title,
+    price: listingData.price,
+    image_urls: listingData.image_urls || [],
+    description: listingData.description,
+    location: listingData.location,
+    category: listingData.categories?.name || "Inne",
+    category_details: listingData.category_details,
+    seller: listingData.profiles?.username || "Anonim",
+    seller_avatar: listingData.profiles?.avatar_url,
+    featured: listingData.is_featured,
+    tags: listingData.tags || [],
+};
+---
+
+<Layout title={listing.title}>
+    <Header
+        client:load
+        user={user}
+        profile={profile}
+    />
+
+    <main class="flex-grow">
+        <ListingDetail
+            client:load
+            listing={listing}
+            onBack={() => window.history.back()}
+        />
+    </main>
+
+    <Footer />
+</Layout>
